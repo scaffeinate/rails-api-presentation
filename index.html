@@ -311,6 +311,123 @@
       </pre>
       <br><label class="text-center">Will Generate <b>app/serializers/comment_serializer.rb</b></label>
     </div> 
+    <div class="step slide" data-x="22000" data-y="500">
+      <br><label>When we try to render out a model in a JSON format active model serializers automatically look for a serializer with the same name which is used to fetch data.</label>
+      <br><label>So <b>render json: Post.find(params[:id])</b> will automatically look for a serialzer named PostSerializer</label>
+      <pre><code class="language-ruby">
+        class PostSerializer < ActiveModel::Serializer
+          #attributes for post
+        end
+      </code></pre>
+      <br><label>You can also specify a serializer while rendering json.</label>
+      <pre>
+        <code class="language-ruby">
+          render json: @post, serializer: MyAwesomeSerializer</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="23000" data-y="500">
+      <h2 class="text-center"><b>Customizing the format</b></h2>
+      <br><label>Since Active Model Serailizers follow an object oriented approach customising the output is a piece of cake!</label><br>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url, :custom_created_at
+            
+            def custom_time
+              object.created_at.strftime('%H:%M')
+            end
+            
+            def name
+             obj.name.capitalize
+            end
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="24000" data-y="500">
+      <h2 class="text-center"><b>Customizing the root element</b></h2>
+      <br><label>You can either disable the root element or specify one of your own. There are multiple ways to achieve this</label>
+      <pre>
+        <code class="language-ruby">
+          render json: @posts, root: false</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          render json: @posts, root: "custom_posts"</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            self.root = false
+          end</code>
+      </pre>
+      <br><label class="text-center">initializers/active_model.rb</label>
+      <pre>
+        <code class="language-ruby">
+          ActiveModel::Serializer.root = false</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="25000" data-y="500">
+      <h2><b>Handling Associations</b></h2>
+      <br><label>Active Model Serializers works great with associations as well. You can specify has_many and belongs_to(which technically is has_one in this) in the serializer. This will automatically render the associated objects along with the current object.</label>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            has_many :comments
+            has_one :user
+          end</code>
+      </pre>
+      <br><label>And it works great with polymorphic relations too.</label>
+      <pre>
+        <code class="language-ruby">
+          has_one :commentable, polymorphic: true</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="26000" data-y="500">
+      <h2>Consider the following example:</h2>
+      <br><label>You have a Post model which has_many :comments, as: :commentable. The Comment model belongs_to :commentable, polymorphic: true</label><br>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            has_many :comments
+          end
+          </code>
+      </pre><br>
+      <pre>
+        <code class="language-ruby">
+          class CommentSerializer < ActiveModel::Serializer
+            attributes :id, :content
+            has_one :commentable, polymorphic: true
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="27000" data-y="500">
+      <h2 class="text-center"><b>Embedding Ids</b></h2>
+      <br><label>Sometimes you don't want to print out the associated objects as it rendering will be heavy. Instead you can embed only the ids of associated objects. Active Model Serializers has an option to embed only the ids.</label>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            embed :ids
+            has_many :comments
+          end
+        </code>
+      </pre>
+      <br><label>If you want to include the object only once in your json you can also do that. This makes it easier to fetch content without repeating objects.</label>
+      <pre>
+        <code class="language-ruby">
+          embed :ids, include: true</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="28000" data-y="500">
+      <h2 class="text-center"><b>Some Final Notes</b></h2>
+      <br><label>Please note that serializers are always singular. Like PostSerializer and not Posts. Even if you are looping through an array of records it passes the serializer to each object and not the array itself.</label>
+      <br><label class="text-center">Do checkout the Railscast here</label>
+      <label class="text-center"><a href="http://railscasts.com/episodes/409-active-model-serializers">http://railscasts.com/episodes/409-active-model-serializers</a></label>
+      <br><br><label>I might have missed to explain a few other features such as overriding the hash manually and about scope. Please checkout the repo for more: </label>
+      <label class="text-center"><a href="https://github.com/rails-api/active_model_serializers">https://github.com/rails-api/active_model_serializers</a></label>
+    </div>
   </div>
 <script src="js/impress.js"></script>
 <script type="text/javascript" src="js/prism.js"></script>
