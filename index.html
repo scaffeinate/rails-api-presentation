@@ -106,8 +106,8 @@
     </div>
     <div class="step slide" data-x="9000" data-y="100">
       <label>So if you want to introduce a new API version with new features the all you need to do is generate it under /:api/:new_version. </label>
-    <br><label>(Something like myawesomedomain/api/v2)</label>
-    <br><br><label>This ensures the changes are applied only to the current version without affecting the old API.</label>
+    <label>(Something like myawesomedomain/api/v2)</label>
+    <br><label>This ensures the changes are applied only to the current version without affecting the old API.</label>
     <br>
     <pre>
         <code class="language-ruby">
@@ -169,8 +169,7 @@
               resources :favorites
             end
           end
-        end
-        </code>
+        end</code>
       </pre>
     </div>
     <div class="step slide" data-x="12000" data-y="100">
@@ -253,6 +252,43 @@
             json.url post_url(post, format: :json)
           end</code>
       </pre>
+      <br><label class="text-center">views/api/v1/posts/show.json.jbuilder</label>
+      <pre>
+        <code class="language-ruby">
+          json.extract! @post, :id, :name, :post_url, :user_id, :created_at, :updated_at</code>
+      </pre>
+       <br><label>You can use partials as well</label>
+       <pre>
+         <code class="language-ruby">
+           json.array! @posts, partial: 'posts/post', as: :post</code>
+       </pre>
+    </div>
+    <div class="step slide" data-x="17000" data-y="100">
+      <br><label>To Customise your attributes you can use the following:</label>
+      <pre>
+        <code class="language-ruby">
+        json.extract! @post, :id
+        json.set! :first_name, @post.name
+        json.extract! @post, :post_url, :user_id, :created_at, :updated_at</code>
+      </pre>
+      <br><label>Which will produce the following</label>
+      <pre>
+        <code class="language-javascript">
+        {
+          "id": 1,
+          "first_name": "Sample",
+          "post_url": "www.google.com",
+          "user_id": 1,
+          "created_at": "2014-05-22T14:07:20.235Z",
+          "updated_at": "2014-05-22T14:07:20.235Z"
+        }</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="18000" data-y="100">
+      <br><br><label class="text-center"><a href="http://railscasts.com/episodes/320-jbuilder">http://railscasts.com/episodes/320-jbuilder</a></label>
+      <br><label class="text-center"><a href="https://github.com/rails/jbuilder">https://github.com/rails/jbuilder</a></label>
+      <br><label class="text-center"><a href="http://railscasts.com/episodes/322-rabl?view=asciicast">http://railscasts.com/episodes/322-rabl</a></label>
+      <br><label class="text-center"><a href="https://github.com/nesquena/rabl">https://github.com/nesquena/rabl</a></label>
     </div>
   </div>
 <script src="js/impress.js"></script>
