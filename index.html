@@ -451,6 +451,85 @@
     <div class="step slide" data-x="22000" data-y="2500">
       <h1 class="center-content"><b>Securing your API</b></h1>
     </div>
+    <div class="step slide" data-x="22000" data-y="3500">
+      <br><label>Now our API is public and anyone can exploit it to manipulate records. Security is one big thing one must consider while developing an API. We must develop a secure way to authenticate the clients and securely streaming our content.</label>
+      <br><h3 class="text-center"><b>Rails Authentication Mechanisms</b></h3>
+      <br><label>Rails has built-in methods for http authentication such as http basic authentication and http token authentication. HTTP basic authentication involves sending credentials along with the request. This is one of the insecure ways to secure an API as password is sent as plain text.</label>
+      <label><a href="http://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Basic.html">Rails Basic Authentication</a></label>
+      <br><label>HTTP Token Authentication is way more secure than Basic authentication as it involves sending an access token that is used for verification.</label>
+      <label><a href="http://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Token.html">Rails Token Authentication</a></label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="4500">
+      <h2 class="text-center"><b>Security through API Key verification:</b></h2>
+      <br><label>We can generate a model for API Key generation that will be used for authentication.</label>
+      <pre>
+        <code class="language-ruby">
+          class Access < ActiveRecord::Base
+            before_create { generate_api_key(:api_key) }
+
+            def generate_api_key(column)
+              begin
+                self[column] = SecureRandom.hex
+              end while Access.exists?(column => self[column])
+            end
+          end
+        </code>
+      </pre>
+      <br><label>Passing this key as a part of the URL is insecure as anyone can get hold of the key. The most secure way to conceal the key is to set it to HTTP header. That will ensure the token is unsniffed.</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="5500">
+      <h2 class="text-center"><b>Verifying the Authorization token</b></h2>
+      <br><pre>
+        <code class="language-ruby">
+          class Api::V1::ApiController < ApplicationController
+            before_action :restrict_access
+            def restrict_access
+              authenticate_or_request_with_http_token do |token, options|
+                Access.exists?(api_key: token)
+              end
+            end
+          end</code>
+      </pre>
+      <br><label>Any request without the access key header will render <pre>HTTP Token: Access denied.</pre></label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="6500">
+      <h2><b>User Authentication using Access Token</b></h2>
+      <br><label>Now when we write an API we are not really maintaining any session of the current_user. Instead we can generate a token which also can be set with the HTTP header.</label>
+      <br><pre>
+        <code class="language-ruby">
+          class User < ActiveRecord::Base
+            before_save { generate_user_token(:user_token) }
+
+            def generate_user_token(column)
+              if new_record?
+                begin
+                  self[column] = SecureRandom.hex
+                end while User.exists?(column => self[column])
+              end
+            end
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="22000" data-y="7500">
+      <pre>
+        <code class="language-ruby">
+          def current_user
+            begin
+              user = User.find_by_user_token(request.headers["UserToken"]) if request.headers["UserToken"]
+            rescue
+              nil
+            end
+          end</code>
+      </pre>
+      <br><br><label>Even this method is considered insecure if you are considering to provide third party access as the user's credentials can be exploited by the clients.</label>
+    </div>
+    <div class="step slide" data-x="25000" data-y="7500">
+        <h2 class="text-center"><b>So What's the best way to authenticate a user?</b></h2>
+        <br><label>As far as APIs are concerned the best way to securely logging in without compromising the user's credentials is to go for a OAuth styled approach.</label>
+        <br><br><div class="text-center"><img src="images/doorkeeper.png" alt="DoorKeeper"></div>
+        <br><label>Checkout this Gem called Doorkeeper that neatly provides a OAuth funcationality to authenticate users and is compatible with Devise.</label>
+        <br><label><a href="https://github.com/doorkeeper-gem/doorkeeper">Doorkeeper</a></label>
+    </div>
   </div>
 <script src="js/impress.js"></script>
 <script type="text/javascript" src="js/prism.js"></script>
