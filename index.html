@@ -290,6 +290,27 @@
       <br><label class="text-center"><a href="http://railscasts.com/episodes/322-rabl?view=asciicast">http://railscasts.com/episodes/322-rabl</a></label>
       <br><label class="text-center"><a href="https://github.com/nesquena/rabl">https://github.com/nesquena/rabl</a></label>
     </div>
+    <div class="step slide" data-x="21000" data-y="-100">
+      <h1 class="center-content"><b>Active Model Serializers</b></h1>
+    </div>
+    <div class="step slide" data-x="21000" data-y="500">
+      <br><label>ActiveModel::Serializers encapsulates the JSON serialization of objects.</label>
+      <label><b>In short, serializers replace hash-driven development with object-oriented development.</b></label><br><br>
+      <pre>
+        <code class="language-ruby">
+          gem "active_model_serializers"</code>
+      </pre>
+      <br>
+      <pre>
+        <code class="language-ruby">
+          rails g resource comment content:text user:references post:references</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          rails g serializer comment</code>
+      </pre>
+      <br><label class="text-center">Will Generate <b>app/serializers/comment_serializer.rb</b></label>
+    </div> 
   </div>
 <script src="js/impress.js"></script>
 <script type="text/javascript" src="js/prism.js"></script>
