@@ -428,6 +428,29 @@
       <br><br><label>I might have missed to explain a few other features such as overriding the hash manually and about scope. Please checkout the repo for more: </label>
       <label class="text-center"><a href="https://github.com/rails-api/active_model_serializers">https://github.com/rails-api/active_model_serializers</a></label>
     </div>
+    <div class="step slide" data-x="20000" data-y="1500">
+      <h1 class="center-content"><b>CORS</b></h1>
+    </div>
+    <div class="step slide" data-x="21000" data-y="1500">
+      <h2><b>What is it? Why should I use it?</b></h2>
+      <br><label>CORS is Cross Origin Resource Sharing which is a W3C draft which specifies how the browser should communicate with the server when sharing resources across origins. Basically any request from other than the server is rejected with No 'Access-Control-Allow-Origin' header present error.</label>
+      <br><label>CORS checks for custom HTTP headers so that it can verify the request.</label>
+      <br><label>More on CORS<a href="http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/">http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/</a></label>
+      <br><label>Now if we access our API from a client application then the server cannot validate the origin of the request. It throws an error that HTTP header could not be found. So how to handle it?</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="1500">
+      <h2 class="text-center"><b>Rack CORS</b></h2>
+      <br><label class="text-center"><a href="https://github.com/cyu/rack-cors">https://github.com/cyu/rack-cors</a></label><br>
+      <pre>
+        <code class="language-ruby">
+          gem 'rack-cors', :require => 'rack/cors'</code>
+      </pre>
+      <br><label>It's really easy to configure the gem as well. You just have to provide the whitelist domains to allow access to your resources. If your API is to be consumed by third parties then we can whitelist all domains * and then write our own authentication.</label>
+      <br><label>This Gem basically adds Rack::Cors to our Middleware that intercepts the requests and handles accordingly.</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="2500">
+      <h1 class="center-content"><b>Securing your API</b></h1>
+    </div>
   </div>
 <script src="js/impress.js"></script>
 <script type="text/javascript" src="js/prism.js"></script>
