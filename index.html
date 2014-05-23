@@ -106,8 +106,8 @@
     </div>
     <div class="step slide" data-x="9000" data-y="100">
       <label>So if you want to introduce a new API version with new features the all you need to do is generate it under /:api/:new_version. </label>
-    <br><label>(Something like myawesomedomain/api/v2)</label>
-    <br><br><label>This ensures the changes are applied only to the current version without affecting the old API.</label>
+    <label>(Something like myawesomedomain/api/v2)</label>
+    <br><label>This ensures the changes are applied only to the current version without affecting the old API.</label>
     <br>
     <pre>
         <code class="language-ruby">
@@ -169,8 +169,7 @@
               resources :favorites
             end
           end
-        end
-        </code>
+        end</code>
       </pre>
     </div>
     <div class="step slide" data-x="12000" data-y="100">
@@ -253,6 +252,296 @@
             json.url post_url(post, format: :json)
           end</code>
       </pre>
+      <br><label class="text-center">views/api/v1/posts/show.json.jbuilder</label>
+      <pre>
+        <code class="language-ruby">
+          json.extract! @post, :id, :name, :post_url, :user_id, :created_at, :updated_at</code>
+      </pre>
+       <br><label>You can use partials as well</label>
+       <pre>
+         <code class="language-ruby">
+           json.array! @posts, partial: 'posts/post', as: :post</code>
+       </pre>
+    </div>
+    <div class="step slide" data-x="17000" data-y="100">
+      <br><label>To Customise your attributes you can use the following:</label>
+      <pre>
+        <code class="language-ruby">
+        json.extract! @post, :id
+        json.set! :first_name, @post.name
+        json.extract! @post, :post_url, :user_id, :created_at, :updated_at</code>
+      </pre>
+      <br><label>Which will produce the following</label>
+      <pre>
+        <code class="language-javascript">
+        {
+          "id": 1,
+          "first_name": "Sample",
+          "post_url": "www.google.com",
+          "user_id": 1,
+          "created_at": "2014-05-22T14:07:20.235Z",
+          "updated_at": "2014-05-22T14:07:20.235Z"
+        }</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="18000" data-y="100">
+      <br><br><label class="text-center"><a href="http://railscasts.com/episodes/320-jbuilder">http://railscasts.com/episodes/320-jbuilder</a></label>
+      <br><label class="text-center"><a href="https://github.com/rails/jbuilder">https://github.com/rails/jbuilder</a></label>
+      <br><label class="text-center"><a href="http://railscasts.com/episodes/322-rabl?view=asciicast">http://railscasts.com/episodes/322-rabl</a></label>
+      <br><label class="text-center"><a href="https://github.com/nesquena/rabl">https://github.com/nesquena/rabl</a></label>
+    </div>
+    <div class="step slide" data-x="21000" data-y="-100">
+      <h1 class="center-content"><b>Active Model Serializers</b></h1>
+    </div>
+    <div class="step slide" data-x="21000" data-y="500">
+      <br><label>ActiveModel::Serializers encapsulates the JSON serialization of objects.</label>
+      <label><b>In short, serializers replace hash-driven development with object-oriented development.</b></label><br><br>
+      <pre>
+        <code class="language-ruby">
+          gem "active_model_serializers"</code>
+      </pre>
+      <br>
+      <pre>
+        <code class="language-ruby">
+          rails g resource comment content:text user:references post:references</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          rails g serializer comment</code>
+      </pre>
+      <br><label class="text-center">Will Generate <b>app/serializers/comment_serializer.rb</b></label>
+    </div> 
+    <div class="step slide" data-x="22000" data-y="500">
+      <br><label>When we try to render out a model in a JSON format active model serializers automatically look for a serializer with the same name which is used to fetch data.</label>
+      <br><label>So <b>render json: Post.find(params[:id])</b> will automatically look for a serialzer named PostSerializer</label>
+      <pre><code class="language-ruby">
+        class PostSerializer < ActiveModel::Serializer
+          #attributes for post
+        end
+      </code></pre>
+      <br><label>You can also specify a serializer while rendering json.</label>
+      <pre>
+        <code class="language-ruby">
+          render json: @post, serializer: MyAwesomeSerializer</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="23000" data-y="500">
+      <h2 class="text-center"><b>Customizing the format</b></h2>
+      <br><label>Since Active Model Serailizers follow an object oriented approach customising the output is a piece of cake!</label><br>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url, :custom_created_at
+            
+            def custom_time
+              object.created_at.strftime('%H:%M')
+            end
+            
+            def name
+             obj.name.capitalize
+            end
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="24000" data-y="500">
+      <h2 class="text-center"><b>Customizing the root element</b></h2>
+      <br><label>You can either disable the root element or specify one of your own. There are multiple ways to achieve this</label>
+      <pre>
+        <code class="language-ruby">
+          render json: @posts, root: false</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          render json: @posts, root: "custom_posts"</code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            self.root = false
+          end</code>
+      </pre>
+      <br><label class="text-center">initializers/active_model.rb</label>
+      <pre>
+        <code class="language-ruby">
+          ActiveModel::Serializer.root = false</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="25000" data-y="500">
+      <h2><b>Handling Associations</b></h2>
+      <br><label>Active Model Serializers works great with associations as well. You can specify has_many and belongs_to(which technically is has_one in this) in the serializer. This will automatically render the associated objects along with the current object.</label>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            has_many :comments
+            has_one :user
+          end</code>
+      </pre>
+      <br><label>And it works great with polymorphic relations too.</label>
+      <pre>
+        <code class="language-ruby">
+          has_one :commentable, polymorphic: true</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="26000" data-y="500">
+      <h2>Consider the following example:</h2>
+      <br><label>You have a Post model which has_many :comments, as: :commentable. The Comment model belongs_to :commentable, polymorphic: true</label><br>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            has_many :comments
+          end
+          </code>
+      </pre><br>
+      <pre>
+        <code class="language-ruby">
+          class CommentSerializer < ActiveModel::Serializer
+            attributes :id, :content
+            has_one :commentable, polymorphic: true
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="27000" data-y="500">
+      <h2 class="text-center"><b>Embedding Ids</b></h2>
+      <br><label>Sometimes you don't want to print out the associated objects as it rendering will be heavy. Instead you can embed only the ids of associated objects. Active Model Serializers has an option to embed only the ids.</label>
+      <pre>
+        <code class="language-ruby">
+          class PostSerializer < ActiveModel::Serializer
+            attributes :id, :name, :url
+            embed :ids
+            has_many :comments
+          end
+        </code>
+      </pre>
+      <br><label>If you want to include the object only once in your json you can also do that. This makes it easier to fetch content without repeating objects.</label>
+      <pre>
+        <code class="language-ruby">
+          embed :ids, include: true</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="28000" data-y="500">
+      <h2 class="text-center"><b>Some Final Notes</b></h2>
+      <br><label>Please note that serializers are always singular. Like PostSerializer and not Posts. Even if you are looping through an array of records it passes the serializer to each object and not the array itself.</label>
+      <br><label class="text-center">Do checkout the Railscast here</label>
+      <label class="text-center"><a href="http://railscasts.com/episodes/409-active-model-serializers">http://railscasts.com/episodes/409-active-model-serializers</a></label>
+      <br><br><label>I might have missed to explain a few other features such as overriding the hash manually and about scope. Please checkout the repo for more: </label>
+      <label class="text-center"><a href="https://github.com/rails-api/active_model_serializers">https://github.com/rails-api/active_model_serializers</a></label>
+    </div>
+    <div class="step slide" data-x="20000" data-y="1500">
+      <h1 class="center-content"><b>CORS</b></h1>
+    </div>
+    <div class="step slide" data-x="21000" data-y="1500">
+      <h2><b>What is it? Why should I use it?</b></h2>
+      <br><label>CORS is Cross Origin Resource Sharing which is a W3C draft which specifies how the browser should communicate with the server when sharing resources across origins. Basically any request from other than the server is rejected with No 'Access-Control-Allow-Origin' header present error.</label>
+      <br><label>CORS checks for custom HTTP headers so that it can verify the request.</label>
+      <br><label>More on CORS<a href="http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/">http://www.nczonline.net/blog/2010/05/25/cross-domain-ajax-with-cross-origin-resource-sharing/</a></label>
+      <br><label>Now if we access our API from a client application then the server cannot validate the origin of the request. It throws an error that HTTP header could not be found. So how to handle it?</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="1500">
+      <h2 class="text-center"><b>Rack CORS</b></h2>
+      <br><label class="text-center"><a href="https://github.com/cyu/rack-cors">https://github.com/cyu/rack-cors</a></label><br>
+      <pre>
+        <code class="language-ruby">
+          gem 'rack-cors', :require => 'rack/cors'</code>
+      </pre>
+      <br><label>It's really easy to configure the gem as well. You just have to provide the whitelist domains to allow access to your resources. If your API is to be consumed by third parties then we can whitelist all domains * and then write our own authentication.</label>
+      <br><label>This Gem basically adds Rack::Cors to our Middleware that intercepts the requests and handles accordingly.</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="2500">
+      <h1 class="center-content"><b>Securing your API</b></h1>
+    </div>
+    <div class="step slide" data-x="22000" data-y="3500">
+      <br><label>Now our API is public and anyone can exploit it to manipulate records. Security is one big thing one must consider while developing an API. We must develop a secure way to authenticate the clients and securely streaming our content.</label>
+      <br><h3 class="text-center"><b>Rails Authentication Mechanisms</b></h3>
+      <br><label>Rails has built-in methods for http authentication such as http basic authentication and http token authentication. HTTP basic authentication involves sending credentials along with the request. This is one of the insecure ways to secure an API as password is sent as plain text.</label>
+      <label><a href="http://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Basic.html">Rails Basic Authentication</a></label>
+      <br><label>HTTP Token Authentication is way more secure than Basic authentication as it involves sending an access token that is used for verification.</label>
+      <label><a href="http://api.rubyonrails.org/classes/ActionController/HttpAuthentication/Token.html">Rails Token Authentication</a></label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="4500">
+      <h2 class="text-center"><b>Security through API Key verification:</b></h2>
+      <br><label>We can generate a model for API Key generation that will be used for authentication.</label>
+      <pre>
+        <code class="language-ruby">
+          class Access < ActiveRecord::Base
+            before_create { generate_api_key(:api_key) }
+
+            def generate_api_key(column)
+              begin
+                self[column] = SecureRandom.hex
+              end while Access.exists?(column => self[column])
+            end
+          end
+        </code>
+      </pre>
+      <br><label>Passing this key as a part of the URL is insecure as anyone can get hold of the key. The most secure way to conceal the key is to set it to HTTP header. That will ensure the token is unsniffed.</label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="5500">
+      <h2 class="text-center"><b>Verifying the Authorization token</b></h2>
+      <br><pre>
+        <code class="language-ruby">
+          class Api::V1::ApiController < ApplicationController
+            before_action :restrict_access
+            def restrict_access
+              authenticate_or_request_with_http_token do |token, options|
+                Access.exists?(api_key: token)
+              end
+            end
+          end</code>
+      </pre>
+      <br><label>Any request without the access key header will render <pre>HTTP Token: Access denied.</pre></label>
+    </div>
+    <div class="step slide" data-x="22000" data-y="6500">
+      <h2><b>User Authentication using Access Token</b></h2>
+      <br><label>Now when we write an API we are not really maintaining any session of the current_user. Instead we can generate a token which also can be set with the HTTP header.</label>
+      <br><pre>
+        <code class="language-ruby">
+          class User < ActiveRecord::Base
+            before_save { generate_user_token(:user_token) }
+
+            def generate_user_token(column)
+              if new_record?
+                begin
+                  self[column] = SecureRandom.hex
+                end while User.exists?(column => self[column])
+              end
+            end
+          end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="22000" data-y="7500">
+      <pre>
+        <code class="language-ruby">
+          def current_user
+            begin
+              user = User.find_by_user_token(request.headers["UserToken"]) if request.headers["UserToken"]
+            rescue
+              nil
+            end
+          end</code>
+      </pre>
+      <br><br><label>Even this method is considered insecure if you are considering to provide third party access as the user's credentials can be exploited by the clients.</label>
+    </div>
+    <div class="step slide" data-x="25000" data-y="7500">
+        <h2 class="text-center"><b>So What's the best way to authenticate a user?</b></h2>
+        <br><label>As far as APIs are concerned the best way to securely logging in without compromising the user's credentials is to go for a OAuth styled approach.</label>
+        <br><br><div class="text-center"><img src="images/doorkeeper.png" alt="DoorKeeper"></div>
+        <br><label>Checkout this Gem called Doorkeeper that neatly provides a OAuth funcationality to authenticate users and is compatible with Devise.</label>
+        <br><label><a href="https://github.com/doorkeeper-gem/doorkeeper">Doorkeeper</a></label>
+    </div>
+    <div class="step slide" data-x="25000" data-y="10500">
+      <br><br><h2 class="text-center"><b>Final Thoughts</b></h2>
+      <br><br><br>
+      <div class="text-center">
+        <label><a href="https://github.com/rails-api/rails-api">https://github.com/rails-api/rails-api</a></label>
+        <label><a href="http://railscasts.com/episodes/348-the-rails-api-gem">http://railscasts.com/episodes/348-the-rails-api-gem</a></label>
+        <label><a href="http://www.emilsoman.com/blog/2013/05/18/building-a-tested/">http://www.emilsoman.com/blog/2013/05/18/building-a-tested/</a></label>
+        <label><a href="http://matthewlehner.net/rails-api-testing-guidelines/">http://matthewlehner.net/rails-api-testing-guidelines/</a></label>
+      </div>
+    </div>
+    <div class="step slide" data-x="0" data-y="0">
+      <h1 class="center-content"><b>Thank you</b></h1>
     </div>
   </div>
 <script src="js/impress.js"></script>
