@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1024" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Writing an API using Rails</title>
+  <link href="css/impress-demo.css" rel="stylesheet" />
+  <link rel="stylesheet" type="text/css" href="css/custom.css" />
+  <link rel="stylesheet" type="text/css" href="css/prism.css" />
+</head>
+<body>
+  <div id="impress">
+    <div class="step slide" data-x="0" data-y="-1500">
+      <h1 class="center-content"><b>Writing an API for your Rails App</b></h1>
+    </div>
+    <div class="step slide" data-x="1000" data-y="-1500">
+      <div class="center-content">
+        <h2><b>The Problem</b></h2>
+        <label>The need to write an API for your Rails app</label>
+      </div>
+    </div>
+    <div class="step slide" data-x="2000" data-y="-2500">
+      <h1 class="text-center"><b>The Rise of client side JavaScript <br><br>Frameworks</b></h1>
+      <br>
+      <img src="images/ember.png" alt="Ember" style="width: 200px;" />
+      <img src="images/backbone.png" alt="Backbone" style="width: 200px; float: right;" /><br><br>
+      <div class="text-center"><img src="images/angular.png" alt="Angular" style="width: 300px;" /></div>
+    </div>
+    <div class="step slide" data-x="3000" data-y="-2500">
+      <h1 class="text-center"><b>Writing a REST API</b></h1><br><br>
+      <h6>Rails already follows a RESTful architecture. To generate a RESTful json API we can add format.json to our respond_to block.</h6><br>
+      <pre><code class="language-ruby">
+        class PostsController < ApplicationController
+          def index
+            @posts = Post.all
+            respond_to do |format|
+              format.html
+              format.json { render json: @posts }
+            end
+          end
+        end
+      </code></pre> 
+    </div>
+    <div class="step slide" data-x="4000" data-y="-2500">
+      <div class="text-center">
+        <label>Visiting <b>/posts.json</b> will render the following json.</label>
+      </div>
+      <pre style="line-height: 30px;"><code class="language-javascript">
+        [
+          {
+            "id":1,
+            "name":"Sample",
+            "post_url":"www.google.com",
+            "user_id":1,
+            "url":"http://localhost:3000/posts/1.json"
+          },
+          {
+            "id":2,
+            "name":"Fb",
+            "post_url":"www.facebook.com",
+            "user_id":1,
+            "url":"http://localhost:3000/posts/2.json"
+        }
+      ]
+  </code></pre>
+    </div>
+    <div class="step slide" data-x="5000" data-y="-2500">
+      <div class="center-content">
+        <h1><b>That's it. JSON API Ready?</b></h1>
+        <br><br><h1><b>Not Yet.</b></h1>
+      </div>
+    </div>
+    <div class="step slide" data-x="6000" data-y="100" style="background-color: ">
+      <div class="center-content">
+        <h1><b>API Versioning</b></h1>
+        <br><br>
+        <h1><b>Why?</b></h1>
+      </div>
+    </div>
+    <div class="step slide" data-x="7000" data-y="100">
+      <label>If you are writing a consistent API which will be consumed by multiple clients then  it is the best practise to separate out the API under a namespace.</label><br><br>
+      <label>API versioning lets your API to be backwards compatible.</label>
+      <br><br><br>
+      <h6><a href="http://stackoverflow.com/questions/389169/best-practices-for-api-versioning">http://stackoverflow.com/questions/389169/best-practices-for-api-versioning</a></h6>
+    </div>
+    <div class="step slide" data-x="8000" data-y="100">
+      <br><br><label>Move your API under a namespace <b>:api</b> and the <b>:version</b> in your <b>routes.rb</b></label>
+      <br><br>
+      <pre>
+        <code class="language-ruby">
+          Rails.application.routes.draw do
+            namespace :api do
+              namespace :v1 do
+                resources :users
+                resources :posts
+                resources :videos
+                resources :sessions
+                resources :tags
+                resources :favorites
+              end
+            end
+          end
+        </code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="9000" data-y="100">
+      <label>So if you want to introduce a new API version with new features the all you need to do is generate it under /:api/:new_version. </label>
+    <br><label>(Something like myawesomedomain/api/v2)</label>
+    <br><br><label>This ensures the changes are applied only to the current version without affecting the old API.</label>
+    <br>
+    <pre>
+        <code class="language-ruby">
+          Rails.application.routes.draw do
+            namespace :api do
+              namespace :v2 do
+                resources :users, only: [:create, :show]
+                resources :posts, except: :destroy
+                resources :videos
+                resources :sessions
+                resources :tags
+                resources :favorites
+              end
+            end
+          end
+        </code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="10000" data-y="100">
+      <div class="text-center"><label>app/controllers/api/v1/posts_controller.rb</label></div>
+      <pre>
+        <code class="language-ruby">
+          class Api::V1::PostsController < ApplicationController
+            respond_to :json
+            def index
+              @posts = Post.all
+              render json: @posts
+            end
+          end
+        </code>
+      </pre>
+      <div class="text-center"><label>app/controllers/api/v2/posts_controller.rb</label></div>
+      <pre>
+        <code class="language-ruby">
+          class Api::V2::PostsController < ApplicationController  
+            respond_to :json
+            def index
+              @posts = Post.where('created_at >= ?', custom_time)
+              render json: @posts
+            end
+          end 
+        </code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="11000" data-y="100">
+      <br><h2 class="text-center"><b>Default to JSON</b></h2>
+      <br><label>You can make the API controllers default to json by adding format in the routes file.
+      Visiting api/v1/posts will produce the json instead of html content.</label><br><br>
+      <pre>
+        <code class="language-ruby">
+        Rails.application.routes.draw do
+          namespace :api, defaults: {format: :json} do
+            namespace :v1 do
+              resources :users
+              resources :posts
+              resources :videos
+              resources :sessions
+              resources :tags
+              resources :favorites
+            end
+          end
+        end
+        </code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="12000" data-y="100">
+      <h2 class="text-center"><b>API Controller</b></h2>
+      <br><label>Additionally you can generate an API Controller that inherits from ApplicationController.
+      Then you can check the API specific Logic like Http Header and Token verification without affecting the functionality of the App.</label><br>
+      <pre>
+        <code class="language-ruby">
+          class Api::V1::ApiController < ApplicationController
+            #Add Api Specific methods and validation
+          end 
+        </code>
+      </pre>
+      <pre>
+        <code class="language-ruby">
+          class Api::V1::PostsController < Api::V1::ApiController
+            def index
+              @posts = Post.all
+              render json: @posts
+            end
+          end 
+        </code>
+      </pre>
+      <label class="text-center" style="display: block;"><a href="http://andrewberls.com/blog/post/api-versioning-with-rails-4">http://andrewberls.com/blog/post/api-versioning-with-rails-4</a></label>
+    </div>
+    <div class="step slide" data-x="12000" data-y="1000">
+      <div class="center-content">
+        <h1><b>Structuring JSON</b></h1>
+      </div>
+    </div>
+    <div class="step slide" data-x="13000" data-y="1000">
+      <pre>
+        <code class="language-javascript">
+        {
+          "id": 1,
+          "name": "Sample",
+          "post_url": "www.google.com",
+          "user_id": 1,
+          "created_at": "2014-05-22T14:07:20.235Z",
+          "updated_at": "2014-05-22T14:07:20.235Z"
+        }</code>
+      </pre>
+      <pre>
+        <code class="language-javascript">
+        {
+          "id": 1,
+          "post_name": "Sample",
+          "post_url": "www.google.com",
+          "user_id": 1,
+          "tag_ids": [1, 2, 3]
+        }</code>
+      </pre>
+    </div>
+    <div class="slide step" data-x="14000" data-y="1000">
+      <label class="center-content" style="display: block;">Rails serializes the object passed into the required format. What if you want to customise th JSON output? Like Remove the root element, Add custom attributes or Adding has_many relations? How do you acheive this?</label>
+    </div>
+    <div class="slide step" data-x="15000" data-y="100">
+      <h1 class="text-center"><b>JBuilder</b></h1><br>
+      <br><label>Jbuilder gives you a simple DSL for declaring JSON structures that beats massaging giant hash structures.</label><br>
+      <label class="text-center">controllers/api/v1/posts_controller.rb</label>
+      <pre>
+        <code class="language-ruby">
+        class Api::V1::PostsController < Api::V1::ApiController
+          def index
+            @posts = Post.all
+          end
+
+          def show
+            @post = Post.find(params[:id])
+          end
+        end</code>
+      </pre>
+    </div>
+    <div class="step slide" data-x="16000" data-y="100">
+      <br><label class="text-center">views/api/v1/posts/index.json.jbuilder</label>
+      <pre>
+        <code class="language-ruby">
+          json.array!(@posts) do |post|
+            json.extract! post, :id, :name, :post_url, :user_id
+            json.url post_url(post, format: :json)
+          end</code>
+      </pre>
+    </div>
+  </div>
+<script src="js/impress.js"></script>
+<script type="text/javascript" src="js/prism.js"></script>
+<script>impress().init();</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+@font-face
+{
+  font-family: 'OpenSans';
+  src: url('../fonts/OpenSans-Regular.ttf');
+}
+
+@font-face
+{
+  font-family: 'OpenSansLight';
+  src: url('../fonts/OpenSans-Light.ttf');
+}
+
+body{
+  font-family: 'OpenSansLight';
+  line-height: 20px !important;
+}
+
+h1, h2, h3, h4, h5, h6, label, span{
+  font-family: 'OpenSans'; 
+}
+
+h1{
+  font-size: 48px;
+}
+
+h2{
+  font-size: 36px;
+}
+
+h6{
+  font-size: 24px;
+}
+
+label{
+  font-size: 20px;
+}
+
+pre{
+  padding: 0 !important;
+  font-size: 16px;
+}
+
+body{
+  background: rgba(0,0,0,0.1);
+}
+
+.center-content{
+  margin-top: 35%; 
+  text-align: center;
+}
+
+.text-center{
+  text-align: center;
+}
+
+a{
+  text-shadow: none;
+  text-decoration: underline;
+}
+
+.language-ruby{
+  line-height: 25px;
+  font-size: 18px;
+}
+
+.language-javascript{
+  line-height: 30px;
+  font-size: 18px; 
+}
+
+label{
+  display: block;
+}
